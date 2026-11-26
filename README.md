@@ -66,9 +66,28 @@ Pass `OPENAI_API_KEY` and `OPENAI_MODEL` to the backend container through your d
 | GET | `/api/complaints/:id` | Case details |
 | PATCH | `/api/complaints/:id` | Officer update |
 
+## Grievance operations features
+
+- **SLA deadlines and escalation:** new cases receive a response target based on priority (normal 72 hours, high 24 hours, critical 4 hours). The backend checks overdue cases every minute and on dashboard/API reads. A missed normal SLA becomes high, a missed high SLA becomes critical, and a missed critical SLA is flagged for senior-officer intervention. Every escalation is written to the case audit trail. These are configurable starter targets, not official statutory service guarantees.
+- **District issue heatmap:** officer analytics and the public dashboard show district totals, open counts and critical counts, plus category/department aggregates.
+- **Evidence uploads:** citizens may attach up to four JPG, PNG, WEBP, PDF or TXT files, up to 5 MB each. Files are stored on the API server and metadata is recorded against the grievance. Docker Compose mounts a persistent uploads_data volume.
+- **Duplicate grouping:** incoming complaints are compared with the latest 250 cases using token-overlap similarity. A match at 55% or higher is linked to the existing group for officer review; it does not silently merge or close complaints.
+- **Public transparency dashboard:** exposes aggregate counts, resolution rate, district/category/department breakdowns only. It does not return names, phone numbers, complaint text or evidence.
+
+### New API endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/complaints/public/stats` | Privacy-safe public aggregate dashboard data |
+| POST | `/api/complaints/:id/attachments` | Upload up to four evidence files (multipart field: `files`) |
+| GET | `/api/complaints/:id/attachments/:attachmentId` | Download a grievance attachment |
+| GET | `/api/complaints/analytics` | Includes district heatmap, overdue and duplicate counts |
+
+SLA checks run in the Node process and during dashboard/API reads. For multi-instance or serverless production hosting, move the scheduler to a single dedicated worker/queue to avoid duplicate concurrent processing. Keep the uploads directory on persistent private storage; local container filesystems are not durable by default.
+
 ## Safety, privacy and production readiness
 
-This is a hackathon MVP, not an approved government decision system. AI can misunderstand dialects, locations, urgency or context. Officers must verify category, priority and routing; never deny a service based on an AI output. Emergency cases must use official emergency channels, not wait for this portal. Do not send real sensitive personal information to an unapproved AI environment. Before a real deployment, complete department-approved privacy/security review, officer authentication and role-based access, encryption, retention/deletion policy, abuse controls, protected audit logs, independent language and triage evaluation, appeal/escalation paths, backups, monitoring and approved department integrations.
+This is a hackathon MVP, not an approved government decision system. AI can misunderstand dialects, locations, urgency or context. Officers must verify category, priority and routing; never deny a service based on an AI output. Emergency cases must use official emergency channels, not wait for this portal. Do not send real sensitive personal information to an unapproved AI environment. Before a real deployment, complete department-approved privacy/security review, officer authentication and role-based access, private authenticated attachment delivery, malware scanning for uploads, encryption, retention/deletion policy, abuse controls, protected audit logs, independent language and triage evaluation, appeal/escalation paths, backups, monitoring and approved department integrations. The current hackathon MVP does not include officer login or file malware scanning; do not expose it to the public internet with real citizen data until these controls are added.
 
 ## Pitch
 
