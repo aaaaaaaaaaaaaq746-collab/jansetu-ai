@@ -12,6 +12,9 @@ services:
       CLIENT_URL: http://localhost:4173
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
     depends_on: [mongo]
     ports: ["5000:5000"]
   web:
@@ -20,3 +23,4 @@ services:
     ports: ["4173:80"]
 volumes:
   mongo_data:
+  uploads_data:
