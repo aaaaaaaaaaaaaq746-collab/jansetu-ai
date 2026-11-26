@@ -10,10 +10,11 @@ const schema = new mongoose.Schema({
   district:{type:String,required:true,trim:true,maxlength:80},
   location:{type:String,required:true,trim:true,maxlength:200},
   description:{type:String,required:true,trim:true,minlength:12,maxlength:3000},
-  language:String,category:String,department:String,
+  language:String,normalizedEnglish:String,category:String,department:String,
   priority:{type:String,enum:["normal","high","critical"],default:"normal"},
-  confidence:{type:Number,min:0,max:1},reason:String,
-  emergencyFlag:{type:Boolean,default:false},
+  confidence:{type:Number,min:0,max:1},reason:String,aiSummary:String,routingReason:String,
+  suggestedAction:String,citizenReplyDraft:String,aiUsed:{type:Boolean,default:false},
+  emergencyFlag:{type:Boolean,default:false},requiresHumanReview:{type:Boolean,default:true},
   status:{type:String,enum:["received","triaged","assigned","in_progress","resolved","rejected"],default:"received"},
   assignedTo:{type:String,default:""},audit:{type:[auditSchema],default:[]}
 },{timestamps:true});
