@@ -2,6 +2,8 @@ export const SLA_HOURS={normal:72,high:24,critical:4};
 export const slaDeadline=(priority,from=new Date())=>new Date(from.getTime()+(SLA_HOURS[priority]||72)*3600000);
 
 export async function escalateOverdueCases(Complaint,now=new Date()){
+ const missing=await Complaint.find({dueAt:null,createdAt:{$exists:true},status:{$nin:["resolved","rejected"]}}).limit(250);
+ for(const doc of missing){doc.dueAt=slaDeadline(doc.priority||"normal",doc.createdAt);await doc.save();}
  const overdue=await Complaint.find({status:{$nin:["resolved","rejected"]},dueAt:{$lte:now},escalated:{$ne:true}}).limit(250);
  let escalated=0;
  for(const doc of overdue){
