@@ -16,7 +16,7 @@ export async function createComplaint(req,res,next){
   const doc=await Complaint.create({reference:ref(),name,phone,district,location,description,...result,reason:result.routingReason,audit:[{action:"created",detail:"Citizen submitted grievance"},{action:"ai_triage",detail:result.aiUsed?"AI analysis generated; officer review required":"Rules-based fallback used"}]});
   const others=await Complaint.find({_id:{$ne:doc._id}}).select("reference description").sort({createdAt:-1}).limit(100).lean();
   const similarCases=others.map(x=>({id:x.reference,score:similarity(description,x.description)})).filter(x=>x.score>=.25).sort((a,b)=>b.score-a.score).slice(0,3);
-  res.status(201).json({id:doc.reference,language:doc.language,category:doc.category,department:doc.department,priority:doc.priority,confidence:doc.confidence,reason:doc.reason,summary:doc.aiSummary||doc.description.slice(0,240),routingReason:doc.routingReason,suggestedAction:doc.suggestedAction,citizenReplyDraft:doc.citizenReplyDraft,aiUsed:doc.aiUsed,requiresHumanReview:true,emergencyFlag:doc.emergencyFlag,status:doc.status,similarCases,message:"Your grievance has been registered. An officer will review the suggested routing."});
+  res.status(201).json({id:doc.reference,language:doc.language,category:doc.category,department:doc.department,priority:doc.priority,confidence:doc.confidence,reason:doc.reason,summary:doc.aiSummary||doc.description.slice(0,240),routingReason:doc.routingReason,suggestedAction:doc.suggestedAction,aiUsed:doc.aiUsed,requiresHumanReview:true,emergencyFlag:doc.emergencyFlag,status:doc.status,similarCases,message:"Your grievance has been registered. An officer will review the suggested routing."});
  }catch(e){next(e)}
 }
 export async function draftReply(req,res,next){
