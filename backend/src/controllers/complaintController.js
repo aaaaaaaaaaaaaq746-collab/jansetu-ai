@@ -84,21 +84,21 @@ async function aggregateDistricts(){
 export async function analytics(req,res,next){
  try{
   await escalateOverdueCases(Complaint);
-  const [total,statuses,priorities,departments,byDistrict,byCategory,overdue,duplicates]=await Promise.all([
-   Complaint.countDocuments(),Complaint.aggregate([{$group:{_id:"$status",n:{$sum:1}}}]),Complaint.aggregate([{$group:{_id:"$priority",n:{$sum:1}}}]),Complaint.aggregate([{$group:{_id:"$department",n:{$sum:1}}}]),aggregateDistricts(),Complaint.aggregate([{$group:{_id:"$category",n:{$sum:1}}}]),Complaint.countDocuments({...openFilter,dueAt:{$lt:new Date()}}),Complaint.countDocuments({duplicateGroupId:{$ne:null}})
+  const [total,statuses,priorities,departments,byDistrict,byCategory,districtCategory,overdue,duplicates]=await Promise.all([
+   Complaint.countDocuments(),Complaint.aggregate([{$group:{_id:"$status",n:{$sum:1}}}]),Complaint.aggregate([{$group:{_id:"$priority",n:{$sum:1}}}]),Complaint.aggregate([{$group:{_id:"$department",n:{$sum:1}}}]),aggregateDistricts(),Complaint.aggregate([{$group:{_id:"$category",n:{$sum:1}}}]),Complaint.aggregate([{$group:{_id:{district:"$district",category:"$category"},count:{$sum:1}}},{$sort:{count:-1}}]),Complaint.countDocuments({...openFilter,dueAt:{$lt:new Date()}}),Complaint.countDocuments({duplicateGroupId:{$ne:null}})
   ]);
-  const map=rows=>Object.fromEntries(rows.map(x=>[x._id,x.n]));res.json({total,byStatus:map(statuses),byPriority:map(priorities),byDepartment:map(departments),byCategory:map(byCategory),byDistrict,overdue,duplicateLinked:duplicates});
+  const map=rows=>Object.fromEntries(rows.map(x=>[x._id,x.n]));res.json({total,byStatus:map(statuses),byPriority:map(priorities),byDepartment:map(departments),byCategory:map(byCategory),byDistrict,districtCategory,overdue,duplicateLinked:duplicates});
  }catch(e){next(e)}
 }
 export async function publicStats(req,res,next){
  try{
   await escalateOverdueCases(Complaint);
-  const [total,resolved,open,byDistrict,byCategory,byDepartment]=await Promise.all([
+  const [total,resolved,open,byDistrict,byCategory,byDepartment,districtCategory]=await Promise.all([
    Complaint.countDocuments(),Complaint.countDocuments({status:"resolved"}),Complaint.countDocuments(openFilter),aggregateDistricts(),
    Complaint.aggregate([{$group:{_id:"$category",count:{$sum:1}}},{$sort:{count:-1}}]),
    Complaint.aggregate([{$group:{_id:"$department",count:{$sum:1}}},{$sort:{count:-1}}])
   ]);
   const resolutionRate=total?Math.round(resolved/total*100):0;
-  res.json({total,resolved,open,resolutionRate,byDistrict,byCategory,byDepartment,updatedAt:new Date()});
+  res.json({total,resolved,open,resolutionRate,byDistrict,byCategory,byDepartment,districtCategory,updatedAt:new Date()});
  }catch(e){next(e)}
 }
