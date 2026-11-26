@@ -11,5 +11,5 @@ app.use("/api",rateLimit({windowMs:900000,limit:300,standardHeaders:"draft-7",le
 app.get("/api/health",(_req,res)=>res.json({status:"ok",service:"jansetu-api",version:"2.0.0"}));
 app.use("/api/complaints",routes);
 app.use((req,res)=>res.status(404).json({message:"Route not found"}));
-app.use((err,_req,res,_next)=>{console.error(err);if(err.name==="ValidationError")return res.status(400).json({message:err.message});res.status(500).json({message:"Unexpected server error"})});
+app.use((err,_req,res,_next)=>{console.error(err);if(err.name==="ValidationError"||err.name==="MulterError")return res.status(err.code==="LIMIT_FILE_SIZE"?413:400).json({message:err.code==="LIMIT_FILE_SIZE"?"Each file must be 5 MB or smaller.":err.message});if(err.message?.startsWith("Only JPG"))return res.status(400).json({message:err.message});res.status(500).json({message:"Unexpected server error"})});
 export default app;
