@@ -1,77 +1,66 @@
-# JANSETU AI — Universal Intake, Triage & Routing Engine
+# JANSETU AI — MERN Edition
 
-**AI Kaushal Hackathon · CM Office / IT & Electronics Department, Uttar Pradesh**
+**Universal Intake, Triage & Routing Engine** · InMobi AI Kaushal Hackathon · Uttar Pradesh
 
-JANSETU AI turns unstructured citizen grievances into structured, traceable cases. It detects language, identifies topic and department, estimates urgency, surfaces possible duplicates, and gives officers a transparent queue to review and route cases.
+Built with **MongoDB + Express.js + React + Node.js**:
+- MongoDB stores grievance records and audit history.
+- Express and Node.js provide the REST API, validation, triage and routing.
+- React + Vite power the citizen portal and officer dashboard.
 
-> This repository is a working MVP. The included triage engine is deterministic and explainable (keyword + scoring based); it does not call a hosted LLM or claim government-system integration. Swap in an approved model/service behind the triage interface after validation and procurement.
+## Features
+- Hindi/English grievance intake and case tracking
+- Explainable category, department and urgency suggestions
+- Critical safety phrase flag and emergency-service guidance
+- Similar-case matching, officer queue, search and filters
+- Case assignment, status updates, analytics and audit history
+- Demo seed script, automated Node tests, Docker Compose and CI
 
-## What works
-- Citizen intake in English or Hindi (with transliteration-friendly keyword coverage), including contact and location fields.
-- Automatic category, suggested department, priority, confidence, and human-readable rationale.
-- High-risk safety flags for emergency review; the UI clearly tells citizens to use emergency services for immediate danger.
-- Similar-case detection to help officers identify repeat complaints.
-- Officer dashboard with filters, case detail, status updates, assignment, and routing.
-- SQLite persistence, audit events, seeded demo cases, API docs, and tests.
-- Responsive interface; no frontend build step.
+**AI transparency:** The triage service is a deterministic keyword/scoring baseline, not a hosted LLM or validated government decision system. Officers must review recommendations. It must never be used to deny service or replace emergency response.
 
-## Quick start
-Requires Python 3.10+.
+## Run locally
+Requirements: Node.js 18+ and MongoDB 6+ (local or Atlas). See [Express installation](https://expressjs.com/en/starter/installing/) and [MongoDB MERN overview](https://www.mongodb.com/docs/drivers/node-frameworks/react/).
 
 ```bash
-python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+npm install
+cp .env.example .env
+# Configure MONGODB_URI in .env
+npm run dev
 ```
-Open http://127.0.0.1:8000. API docs: http://127.0.0.1:8000/docs
+- React: http://localhost:5173
+- API health: http://localhost:5000/api/health
 
-Optional configuration:
+Optional demo data: `npm run seed`
+
+## Docker
 ```bash
-export JANSETU_DB_PATH=./jansetu.db
-export JANSETU_DEMO_MODE=true
+docker compose up --build
 ```
-
-## Demo flow
-1. Open **Citizen portal**, submit a Hindi or English grievance.
-2. Note the generated case ID and suggested department/priority.
-3. Open **Officer dashboard**, inspect the case and similar cases.
-4. Assign an officer and update status. Every change creates an audit event.
-
-## Architecture
-```
-Citizen Web UI ── POST /api/complaints ──> Intake & validation
-                                           │
-                                    Triage engine
-                             language / category / urgency
-                                           │
-                                  Duplicate matcher
-                                           │
-                                  SQLite case store
-                                           │
-Officer dashboard <── GET/PATCH APIs ── Routing & audit log
-```
+- Frontend: http://localhost:4173
+- API: http://localhost:5000
 
 ## API
-- `POST /api/complaints` — submit a grievance
-- `GET /api/complaints` — list/filter cases
-- `GET /api/complaints/{id}` — case detail, similar cases, audit history
-- `PATCH /api/complaints/{id}` — update status, assignee, department, priority
-- `GET /api/analytics` — aggregate dashboard metrics
-- `GET /api/health` — health check
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/health` | Health |
+| POST | `/api/complaints` | Submit grievance |
+| GET | `/api/complaints` | List/filter cases |
+| GET | `/api/complaints/analytics` | Dashboard metrics |
+| GET | `/api/complaints/track/:id` | Citizen tracking |
+| GET | `/api/complaints/:id` | Case details |
+| PATCH | `/api/complaints/:id` | Officer update |
 
-## Responsible deployment checklist
-Before production: integrate verified identity/consent and secure contact handling; add role-based access control, encryption at rest/in transit, retention policies, rate limiting, abuse controls, accessibility and language testing, human review, model evaluation, appeal/escalation paths, monitoring, backups, and department-approved integrations. Never use automated triage as the sole basis to deny service or delay emergency response. Do not submit real sensitive personal data to this demo.
+## Project layout
+```
+backend/src/{config,controllers,models,routes,services}
+backend/test/
+frontend/src/
+docker-compose.yml
+```
 
-## Project structure
-- `app/triage.py`: explainable bilingual triage and duplicate similarity
-- `app/main.py`: FastAPI endpoints and SQLite persistence
-- `app/static/`: citizen and officer interface
-- `tests/`: core triage and API tests
+## Production checklist
+Add officer authentication/RBAC, protect personal data, encryption, retention/deletion policy, abuse controls, audit-log protection, accessibility and language testing, independent triage evaluation, escalation and appeal paths, backups, monitoring and department-approved integrations. Do not enter real sensitive personal data into an unapproved demo environment.
 
-## Hackathon pitch
-**JANSETU AI — One front door. Clear priority. Accountable resolution.** It creates a common intake layer across departments while keeping final decisions with authorised human officers. The MVP focuses on fast, transparent routing rather than opaque autonomous decision-making.
+## Pitch
+**JANSETU AI — One front door. Clear priority. Accountable resolution.** A common intake layer that helps route grievances to the right department while keeping decisions with authorised human officers.
 
-## License
-MIT — see [LICENSE](LICENSE).
+MIT License.
