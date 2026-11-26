@@ -1,6 +1,16 @@
 import {Router} from "express";
 import * as c from "../controllers/complaintController.js";
+import {complaintUpload} from "../middleware/upload.js";
 const r=Router();
-r.post("/ai/analyze",c.analyzeIntake);r.post("/:id/draft-reply",c.draftReply);
-r.post("/",c.createComplaint);r.get("/",c.listComplaints);r.get("/analytics",c.analytics);r.get("/track/:id",c.trackComplaint);r.get("/:id",c.getComplaint);r.patch("/:id",c.updateComplaint);
+r.post("/ai/analyze",c.analyzeIntake);
+r.get("/public/stats",c.publicStats);
+r.post("/:id/draft-reply",c.draftReply);
+r.post("/:id/attachments",complaintUpload.array("files",4),c.uploadAttachments);
+r.get("/:id/attachments/:attachmentId",c.downloadAttachment);
+r.post("/",c.createComplaint);
+r.get("/",c.listComplaints);
+r.get("/analytics",c.analytics);
+r.get("/track/:id",c.trackComplaint);
+r.get("/:id",c.getComplaint);
+r.patch("/:id",c.updateComplaint);
 export default r;
