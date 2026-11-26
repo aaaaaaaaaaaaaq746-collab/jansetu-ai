@@ -19,9 +19,10 @@ export async function analyzeComplaint(description,{district="",location=""}={})
  );
  if(!result)return base;
  const category=categories.includes(result.category)?result.category:"other";
+ const department=departments[categories.indexOf(category)]||base.department;
  const emergencyFlag=Boolean(result.emergencyFlag)||base.emergencyFlag;
  const priority=emergencyFlag?"critical":(["normal","high","critical"].includes(result.priority)?result.priority:base.priority);
- return {language:String(result.language||base.language).slice(0,40),normalizedEnglish:String(result.normalizedEnglish||description).slice(0,3000),category,department:String(result.department||base.department).slice(0,120),priority,summary:String(result.summary||description).slice(0,500),routingReason:String(result.routingReason||base.reason).slice(0,700),suggestedAction:String(result.suggestedAction||"Officer review required").slice(0,500),citizenReplyDraft:String(result.citizenReplyDraft||base.citizenReplyDraft).slice(0,1000),confidence:Math.max(0,Math.min(1,Number(result.confidence)||0.5)),emergencyFlag,requiresHumanReview:true,aiUsed:true};
+ return {language:String(result.language||base.language).slice(0,40),normalizedEnglish:String(result.normalizedEnglish||description).slice(0,3000),category,department,priority,summary:String(result.summary||description).slice(0,500),routingReason:String(result.routingReason||base.reason).slice(0,700),suggestedAction:String(result.suggestedAction||"Officer review required").slice(0,500),citizenReplyDraft:String(result.citizenReplyDraft||base.citizenReplyDraft).slice(0,1000),confidence:Math.max(0,Math.min(1,Number(result.confidence)||0.5)),emergencyFlag,requiresHumanReview:true,aiUsed:true};
 }
 
 export async function draftCitizenReply(complaint,{status,officerNote}={}){
