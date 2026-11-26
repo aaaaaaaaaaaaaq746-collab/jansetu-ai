@@ -21,7 +21,7 @@ const schema = new mongoose.Schema({
   emergencyFlag:{type:Boolean,default:false},requiresHumanReview:{type:Boolean,default:true},
   status:{type:String,enum:["received","triaged","assigned","in_progress","resolved","rejected"],default:"received"},
   assignedTo:{type:String,default:""},
-  dueAt:{type:Date,index:true},escalated:{type:Boolean,default:false},escalatedAt:Date,escalationLevel:{type:Number,default:0},
+  dueAt:{type:Date,index:true},resolvedAt:Date,escalated:{type:Boolean,default:false},escalatedAt:Date,escalationLevel:{type:Number,default:0},
   duplicateGroupId:{type:String,index:true,default:null},attachments:{type:[attachmentSchema],default:[]},
   audit:{type:[auditSchema],default:[]}
 },{timestamps:true});
