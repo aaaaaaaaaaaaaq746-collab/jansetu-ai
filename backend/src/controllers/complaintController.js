@@ -40,7 +40,7 @@ export async function listComplaints(req,res,next){
 export async function getComplaint(req,res,next){
  try{
   const row=await Complaint.findOne({reference:req.params.id}).lean();if(!row)return res.status(404).json({message:"Case not found"});
-  const others=await Complaint.find({_id:{$ne:row._id},$or:[{duplicateGroupId:row.duplicateGroupId},{duplicateGroupId:row.reference},{reference:row.duplicateGroupId}]}).select("reference district status priority description createdAt").limit(30).lean();
+  const group=row.duplicateGroupId||row.reference;\n  const others=await Complaint.find({_id:{$ne:row._id},$or:[{duplicateGroupId:group},{reference:group}]}).select("reference district status priority description createdAt").limit(30).lean();
   const similarCases=others.map(x=>({id:x.reference,district:x.district,status:x.status,priority:x.priority,score:similarity(row.description,x.description)}));
   const {_id,__v,...data}=row;res.json({...data,id:row.reference,similarCases});
  }catch(e){next(e)}
