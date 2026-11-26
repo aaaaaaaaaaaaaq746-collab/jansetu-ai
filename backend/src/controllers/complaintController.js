@@ -96,7 +96,8 @@ export async function publicStats(req,res,next){
   const [total,resolved,open,byDistrict,byCategory,byDepartment,districtCategory]=await Promise.all([
    Complaint.countDocuments(),Complaint.countDocuments({status:"resolved"}),Complaint.countDocuments(openFilter),aggregateDistricts(),
    Complaint.aggregate([{$group:{_id:"$category",count:{$sum:1}}},{$sort:{count:-1}}]),
-   Complaint.aggregate([{$group:{_id:"$department",count:{$sum:1}}},{$sort:{count:-1}}])
+   Complaint.aggregate([{$group:{_id:"$department",count:{$sum:1}}},{$sort:{count:-1}}]),
+   Complaint.aggregate([{$group:{_id:{district:"$district",category:"$category"},count:{$sum:1}}},{$sort:{count:-1}}])
   ]);
   const resolutionRate=total?Math.round(resolved/total*100):0;
   res.json({total,resolved,open,resolutionRate,byDistrict,byCategory,byDepartment,districtCategory,updatedAt:new Date()});
