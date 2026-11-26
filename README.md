@@ -1,66 +1,77 @@
-# JANSETU AI — MERN Edition
+# JANSETU AI — GenAI-enabled MERN Edition
 
 **Universal Intake, Triage & Routing Engine** · InMobi AI Kaushal Hackathon · Uttar Pradesh
 
-Built with **MongoDB + Express.js + React + Node.js**:
-- MongoDB stores grievance records and audit history.
-- Express and Node.js provide the REST API, validation, triage and routing.
-- React + Vite power the citizen portal and officer dashboard.
+Built with **MongoDB + Express.js + React + Node.js**. The optional live GenAI layer uses the OpenAI API from the Node backend; the browser never receives the API key.
 
-## Features
-- Hindi/English grievance intake and case tracking
-- Explainable category, department and urgency suggestions
-- Critical safety phrase flag and emergency-service guidance
-- Similar-case matching, officer queue, search and filters
-- Case assignment, status updates, analytics and audit history
-- Demo seed script, automated Node tests, Docker Compose and CI
+## Five GenAI capabilities
 
-**AI transparency:** The triage service is a deterministic keyword/scoring baseline, not a hosted LLM or validated government decision system. Officers must review recommendations. It must never be used to deny service or replace emergency response.
+1. **Multilingual AI intake:** understands Hindi, English and Hinglish complaints and produces an English-normalised interpretation while retaining the citizen's original text.
+2. **Smart classification:** recommends a grievance category, department and priority based on meaning and context.
+3. **AI complaint summary:** creates a concise officer-friendly summary.
+4. **AI routing assistant:** explains the suggested department and proposes a next action.
+5. **AI reply assistant:** drafts a citizen-facing status reply for an officer to review and edit. The app does not send it automatically.
+
+The AI response is constrained to JSON and checked against allowed categories and priority values. Existing deterministic rules remain the fallback if no API key is configured or intake AI is unavailable. Emergency phrase detection remains active and AI cannot lower a detected critical flag. All AI recommendations require human review.
+
+## Configure GenAI
+
+Set these backend environment variables in `.env`:
+
+```env
+OPENAI_API_KEY=your_server_side_api_key
+OPENAI_MODEL=gpt-4o-mini
+```
+
+Keep `OPENAI_API_KEY` private. Do not add it to frontend variables, source control, screenshots or client-side code. Without a key, JANSETU still runs using the rules-based fallback; the UI labels this clearly.
 
 ## Run locally
-Requirements: Node.js 18+ and MongoDB 6+ (local or Atlas). See [Express installation](https://expressjs.com/en/starter/installing/) and [MongoDB MERN overview](https://www.mongodb.com/docs/drivers/node-frameworks/react/).
+
+Requirements: Node.js 18+ and MongoDB 6+ (local or Atlas).
 
 ```bash
 npm install
 cp .env.example .env
-# Configure MONGODB_URI in .env
+# Configure MONGODB_URI and optional OpenAI settings in .env
 npm run dev
 ```
+
 - React: http://localhost:5173
 - API health: http://localhost:5000/api/health
 
 Optional demo data: `npm run seed`
 
 ## Docker
+
 ```bash
 docker compose up --build
 ```
+
 - Frontend: http://localhost:4173
 - API: http://localhost:5000
 
+Pass `OPENAI_API_KEY` and `OPENAI_MODEL` to the backend container through your deployment's environment configuration; never bake secrets into an image.
+
 ## API
+
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/api/health` | Health |
-| POST | `/api/complaints` | Submit grievance |
+| POST | `/api/complaints/ai/analyze` | Preview multilingual GenAI intake analysis |
+| POST | `/api/complaints` | Submit grievance and save AI/rules analysis |
+| POST | `/api/complaints/:id/draft-reply` | Generate an officer-reviewed reply draft |
 | GET | `/api/complaints` | List/filter cases |
 | GET | `/api/complaints/analytics` | Dashboard metrics |
 | GET | `/api/complaints/track/:id` | Citizen tracking |
 | GET | `/api/complaints/:id` | Case details |
 | PATCH | `/api/complaints/:id` | Officer update |
 
-## Project layout
-```
-backend/src/{config,controllers,models,routes,services}
-backend/test/
-frontend/src/
-docker-compose.yml
-```
+## Safety, privacy and production readiness
 
-## Production checklist
-Add officer authentication/RBAC, protect personal data, encryption, retention/deletion policy, abuse controls, audit-log protection, accessibility and language testing, independent triage evaluation, escalation and appeal paths, backups, monitoring and department-approved integrations. Do not enter real sensitive personal data into an unapproved demo environment.
+This is a hackathon MVP, not an approved government decision system. AI can misunderstand dialects, locations, urgency or context. Officers must verify category, priority and routing; never deny a service based on an AI output. Emergency cases must use official emergency channels, not wait for this portal. Do not send real sensitive personal information to an unapproved AI environment. Before a real deployment, complete department-approved privacy/security review, officer authentication and role-based access, encryption, retention/deletion policy, abuse controls, protected audit logs, independent language and triage evaluation, appeal/escalation paths, backups, monitoring and approved department integrations.
 
 ## Pitch
-**JANSETU AI — One front door. Clear priority. Accountable resolution.** A common intake layer that helps route grievances to the right department while keeping decisions with authorised human officers.
+
+**JANSETU AI — One front door. Understand every voice. Route with accountability.** A multilingual GenAI-assisted grievance intake layer that helps officers understand, summarise and route citizen concerns while keeping decisions with authorised humans.
 
 MIT License.
