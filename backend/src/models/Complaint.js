@@ -3,6 +3,10 @@ const auditSchema = new mongoose.Schema({
   action:{type:String,required:true}, actor:{type:String,default:"system"},
   detail:{type:String,required:true}, createdAt:{type:Date,default:Date.now}
 },{_id:false});
+const attachmentSchema=new mongoose.Schema({
+  originalName:{type:String,required:true,maxlength:180},fileName:{type:String,required:true},
+  mimeType:{type:String,required:true},size:{type:Number,required:true},uploadedAt:{type:Date,default:Date.now}
+},{_id:true});
 const schema = new mongoose.Schema({
   reference:{type:String,unique:true,index:true},
   name:{type:String,required:true,trim:true,maxlength:100},
@@ -16,7 +20,11 @@ const schema = new mongoose.Schema({
   suggestedAction:String,citizenReplyDraft:String,aiUsed:{type:Boolean,default:false},
   emergencyFlag:{type:Boolean,default:false},requiresHumanReview:{type:Boolean,default:true},
   status:{type:String,enum:["received","triaged","assigned","in_progress","resolved","rejected"],default:"received"},
-  assignedTo:{type:String,default:""},audit:{type:[auditSchema],default:[]}
+  assignedTo:{type:String,default:""},
+  dueAt:{type:Date,index:true},escalated:{type:Boolean,default:false},escalatedAt:Date,escalationLevel:{type:Number,default:0},
+  duplicateGroupId:{type:String,index:true,default:null},attachments:{type:[attachmentSchema],default:[]},
+  audit:{type:[auditSchema],default:[]}
 },{timestamps:true});
 schema.index({district:1,status:1,priority:1,createdAt:-1});
+schema.index({district:1,category:1,status:1});
 export default mongoose.model("Complaint",schema);
